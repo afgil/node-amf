@@ -1,8 +1,8 @@
 
-/** dependencies */ 
+/** dependencies */
 var amf = require('./amf');
 
- 
+
 
 /** export constructor */
 exports.AMFPacket = AMFPacket;
@@ -25,9 +25,9 @@ function AMFPacket( v ){
 
 
 /** */
-AMFPacket.prototype.toString = function(){
-	return '[Object AMFPacket]';
-}
+// AMFPacket.prototype.toString = function(){
+// 	return '[Object AMFPacket]';
+// }
 
 
 
@@ -60,7 +60,7 @@ AMFPacket.prototype.addMessage = function( value, requestURI, responseURI ){
 /** */
 AMFPacket.prototype.serialize = function(){
 	var s = amf.serializer( this.version );
-	// write version flag 
+	// write version flag
 	s.writeU16( this.version );
 	// write packet headers
 	s.writeU16( this.nheaders );
@@ -77,12 +77,8 @@ AMFPacket.prototype.serialize = function(){
 };
 
 
-
-/** 
- * @static 
- */
 AMFPacket.deserialize = function( src ){
-	var Packet = new AMFPacket();
+	var Packet = new AMFPacket(0);
 	var d = amf.deserializer( src );
 	var v = d.readU16();
 	if( v !== amf.AMF0 && v !== amf.AMF3 ){
@@ -100,23 +96,3 @@ AMFPacket.deserialize = function( src ){
 	}
 	return Packet;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

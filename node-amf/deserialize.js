@@ -2,7 +2,7 @@
  * AMF deserializer
  */
 
-/** dependencies */ 
+/** dependencies */
 var amf = require('./amf');
 var utils = require('./utils');
 var utf8 = require('./utf8');
@@ -16,7 +16,7 @@ exports.AMFDeserializer = AMFDeserializer;
 
 // ----------------------------------
 
- 
+
 
 /** Constructor */
 function AMFDeserializer( src ){
@@ -42,7 +42,7 @@ AMFDeserializer.prototype.resetRefs = function(){
 AMFDeserializer.prototype.shiftBytes = function( n ){
 	if( n === 0 ){
 		return '';
-	} 
+	}
 	var s = this.s.slice( 0, n );
 	if( s.length !== n ){
 		throw new Error("Not enough input to read "+n+" bytes, got "+s.length+", offset "+this.i);
@@ -51,9 +51,9 @@ AMFDeserializer.prototype.shiftBytes = function( n ){
 	this.i += n;
 	return s;
 }
-	
-	
-/** */	
+
+
+/** */
 AMFDeserializer.prototype.readU8 = function(){
 	var s = this.shiftBytes(1);
 	return s.charCodeAt(0);
@@ -180,7 +180,7 @@ AMFDeserializer.prototype.readValue = function( version ){
 			return undefined;
 		case amf.AMF3_NULL:
 			return null;
-		case amf.AMF3_FALSE:	
+		case amf.AMF3_FALSE:
 			return false;
 		case amf.AMF3_TRUE:
 			return true;
@@ -218,10 +218,13 @@ AMFDeserializer.prototype.readValue = function( version ){
 		case amf.AMF0_STRICT_ARRAY:
 			return this.readStrictArray();
 		case amf.AMF0_DATE:
-			return this.readDate();	
+			return this.readDate();
 		case amf.AMF0_OBJECT:
-			return this.readObject( amf.AMF0 );			
+			return this.readObject( amf.AMF0 );
+    case amf.AMF0_MOVIECLIP:
+  		throw new Error('Type Movie Clip, unsupported AMF0 marker: 0x' +utils.leftPad(marker.toString(16),2,'0')+ ', offset '+this.i);
 		default:
+      console.log(marker);
 			throw new Error('Type error, unsupported AMF0 marker: 0x' +utils.leftPad(marker.toString(16),2,'0')+ ', offset '+this.i);
 		}
 	}
@@ -269,7 +272,7 @@ AMFDeserializer.prototype.readArray = function(){
 		var idx = n >> 1;
 		if( this.refObj[idx] == null ){
 			throw new Error("No array reference at index "+idx+", offset "+this.i);
-		} 
+		}
 		a = this.refObj[idx];
 	}
 	return a;
@@ -300,7 +303,7 @@ AMFDeserializer.prototype.readObject = function( version ){
 		// check if trait data follows
 		if( n & 2 ){
 			Traits = amf.traits();
-			this.refTra.push( Traits );			
+			this.refTra.push( Traits );
 			// check if traits externalizable follows (U29O-traits-ext)
 			if( n & 4 ){
 				Traits.clss = this.readUTF8( amf.AMF3 );
@@ -330,7 +333,7 @@ AMFDeserializer.prototype.readObject = function( version ){
 		}
 		// Have traits - Construct instance
 		// @todo support class mapping somehow?
-		this.refObj.push( Obj );	
+		this.refObj.push( Obj );
 		for( var i = 0; i < Traits.props.length; i++ ){
 			prop = Traits.props[i];
 			Obj[prop] = this.readValue( amf.AMF3 );
@@ -346,7 +349,7 @@ AMFDeserializer.prototype.readObject = function( version ){
 				Obj[prop] = this.readValue( amf.AMF3 );
 			}
 		}
-	} 
+	}
 	// else object reference ( U29O-ref )
 	else {
 		var idx = n >> 1;
@@ -400,7 +403,7 @@ AMFDeserializer.prototype.readByteArray = function(){
 		$idx = $n >> 1;
 		if( ! isset($this->ref_obj[$idx]) ){
 			throw new Error("No byte array reference at index $idx, offset $this->i");
-		} 
+		}
 		$Obj = $this->ref_obj[$idx];
 	}
 	return $Obj;
@@ -440,9 +443,3 @@ AMFDeserializer.prototype.readMessage = function(){
 	Msg.value = this.readValue( amf.AMF0 );
 	return Msg;
 }
-
-
-
-
-	
-	

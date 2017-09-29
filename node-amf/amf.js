@@ -9,7 +9,7 @@ var AMFMessage = require('./message').AMFMessage;
 var AMFSerializer = require('./serialize').AMFSerializer;
 var AMFDeserializer = require('./deserialize').AMFDeserializer;
 
- 
+
 /**
  * @return AMFPacket
  */
@@ -39,22 +39,22 @@ exports.message = function( value, requestURI, responseURI ){
 exports.header = function( value, requestURI, responseURI ){
 	return new AMFMessage( value, requestURI, responseURI );
 }
- 
+
 
 /**
  * @return AMFDeserializer
- */ 
+ */
 exports.deserializer = function( src ){
 	return new AMFDeserializer( src );
-}  
+}
 
 
 /**
  * @return AMFSerializer
- */ 
+ */
 exports.serializer = function(){
-	return new AMFSerializer( 3 );
-} 
+	return new AMFSerializer(0);
+}
 
 
 /**
@@ -104,5 +104,3 @@ exports.AMF3_ARRAY = 9;
 exports.AMF3_OBJECT = 0x0A;
 exports.AMF3_XML = 0x0B;
 exports.AMF3_BYTE_ARRAY = 0x0C;
-
-

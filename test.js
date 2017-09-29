@@ -3,8 +3,8 @@
  * This is simply a test script to ensure the node-amf libraries are working.
  */
 
-// require system libraries 
-var sys = require('sys'); 
+// require system libraries
+var sys = require('sys');
 
 // require node-amf module libraries from relative directory path
 var amf = require('./node-amf/amf');
@@ -69,7 +69,7 @@ for( var t = 0, n = 0; t < tests.length; t++ ){
 		//sys.puts( utils.hex(bin,16) );
 		// deserialize and compare value
 		var Des = amf.deserializer( bin );
-		var value2 = Des.readValue( amf.AMF3 );
+		var value2 = Des.readValue( amf.AMF0 );
 		var s2 =  sys.inspect(value2).replace(/\n/g,' ');
 		// simple value test if value is scalar
 		if( typeof value2 !== typeof value ){
@@ -89,7 +89,36 @@ sys.puts('Tests '+n+'/'+tests.length+' successful\n');
 
 
 
+sys.puts('Test full AMF0 Packet');
 
+try{
+	var moreTests = [3, 'palabra', {'prueba':'terra'}];
+	for( var t = 0, n = 0; t < moreTests.length; t++ ){
+		var obj = moreTests[t];
+		var requestURI = 'CommercialManagerServer.getSalesInventoryReport';
+	  var responseURI = '/22';
+		var equal = require('deep-equal');
+		var AMFPacket = require('./node-amf/packet').AMFPacket;
+		var packet = new AMFPacket(0);
+		packet.addMessage( obj, requestURI, responseURI );
+		var bin = packet.serialize();
+
+
+		var test = AMFPacket.deserialize(bin);
+		if( !equal(test, packet) ){
+			console.log(test);
+			console.log(packet);
+			throw new Error('deserialized value does not match; ');
+		}
+		else{
+			sys.puts('Test '+t+' OK');
+		}
+	}
+}
+catch( Er ){
+	sys.puts('***FAIL*** error serializing packet: ' + Er.message );
+	return;
+}
 
 // Test a full AMF packet with headers and messages
 sys.puts('Testing a full AMF packet');
@@ -98,24 +127,24 @@ sys.puts('Testing a full AMF packet');
 // initialize a new response packet
 try {
 	var Packet = amf.packet();
-	
+
 	// add a simple header with a name and string value
 	Packet.addHeader( 'header 1', 'Example header 1' );
 	Packet.addHeader( 'header 2', 'Example header 2' );
-	
+
 	// Dummy request/response URIs
 	var requestURI = '/1/onResult';
 	var responseURI = '/1';
-	
+
 	// add construct as a single AMF message and return serialized, binary string
 	for( var t = 0, n = 0; t < tests.length; t++ ){
 		var struct = {};
 		var descr = tests[t][0];
 		var value = tests[t][1];
 		struct[descr] = value;
-		Packet.addMessage( struct, requestURI, responseURI ); 
+		Packet.addMessage( struct, requestURI, responseURI );
 	}
-	
+
 	// dump test packet in hex display
 	var bin = Packet.serialize();
     sys.puts(' > Packet serialization ok');
@@ -137,14 +166,3 @@ catch( Er ){
 	sys.puts('***FAIL*** error deserializing packet: ' + Er.message );
 	return;
 }
-
-
-
-
-
-
-
-
-
-
-

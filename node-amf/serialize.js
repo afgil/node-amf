@@ -3,7 +3,7 @@
  */
 
 
-/** dependencies */ 
+/** dependencies */
 var amf = require('./amf');
 var utils = require('./utils');
 var utf8 = require('./utf8');
@@ -158,7 +158,7 @@ AMFSerializer.prototype.writeUTF8 = function( value, writeMarker ){
 		value = '';
 	}
 	var bin = utf8.expand( value );
-	var len = bin.length; 
+	var len = bin.length;
 	// AMF3
 	if( this.version === amf.AMF3 ){
 		if( writeMarker ){
@@ -247,12 +247,12 @@ AMFSerializer.prototype.writeObject = function( value ){
 
 
 
-/** */ 
+/** */
 AMFSerializer.prototype.writeDate = function( d ){
 	if( this.version !== amf.AMF3 ){
 		throw new Error("This library doesn't support AMF0 objects, use AMF3");
 	}
-	this.writeU8( amf.AMF3_DATE );	
+	this.writeU8( amf.AMF3_DATE );
 	this.writeU29( 1 );
 	return this.writeDouble( d.getTime() );
 }
@@ -265,13 +265,13 @@ AMFSerializer.prototype.writeDate = function( d ){
 AMFSerializer.prototype.writeNumber = function( value, writeMarker ){
 	// serialize as integers if possible
 	var n = parseInt( value );
-	if( n === value && n >= 0 && n < 0x20000000 ){
-		return this.writeU29( value, writeMarker );
-	}
+	// if( n === value && n >= 0 && n < 0x20000000 ){
+	// 	return this.writeU29( value, writeMarker );
+	// }
 	return this.writeDouble( value, writeMarker );
 }
 
-	
+
 
 
 /** */
@@ -294,21 +294,21 @@ AMFSerializer.prototype.writeDouble = function( value, writeMarker ){
 
 /** */
 AMFSerializer.prototype.writeU8 = function( n ){
-	return this.s += this.beParser.fromByte(n); 
+	return this.s += this.beParser.fromByte(n);
 }
 
 
 
 /** */
 AMFSerializer.prototype.writeU16 = function( n ){
-	return this.s += this.beParser.fromWord(n); 
+	return this.s += this.beParser.fromWord(n);
 }
 
 
 
 /** */
 AMFSerializer.prototype.writeU32 = function( n ){
-	return this.s += this.beParser.fromDWord(n); 
+	return this.s += this.beParser.fromDWord(n);
 }
 
 
@@ -317,66 +317,54 @@ AMFSerializer.prototype.writeU32 = function( n ){
 AMFSerializer.prototype.writeU29 = function( n, writeMarker ){
 	// unsigned range: 0 -> pow(2,29)-1; 0 -> 0x1FFFFFFF
 	// signed range: -pow(2,28) -> pow(2,28)-1; -0x10000000 -> 0x0FFFFFFF
-	if( n < 0 ){
-        throw new Error('U29 range error, '+n+' < 0');
-        //n += 0x20000000;
-	}
-	var a, b, c, d;
-	if( n < 0x00000080 ){
-		// 0AAAAAAA
-		a = n;
-	}
-	else if( n < 0x00004000 ){
-		//                      0x80-FF  0x00-7F    
-		// 00AAAAAA ABBBBBBB -> 1AAAAAAA 0BBBBBBB
-		b = n & 0x7F;
-		a = 0x80 | ( n>>7 & 0x7F ); 
-	}
-	else if( n < 0x00200000 ){
-		//                               0x80-FF  0x80-FF  0x00-7F
-		// 000AAAAA AABBBBBB BCCCCCCC -> 1AAAAAAA 1BBBBBBB 0CCCCCCC
-		c = n & 0x7F;
-		b = 0x80 | ( (n>>=7) & 0x7F ); 
-		a = 0x80 | ( (n>>=7) & 0x7F );
-	}
-	else if( n < 0x20000000 ){
-		//                                        0x80-FF  0x80-FF  0x80-FF  0x00-FF
-		// 000AAAAA AABBBBBB BCCCCCCC DDDDDDDD -> 1AAAAAAA 1BBBBBBB 1CCCCCCC DDDDDDDD
-		d = n & 0xFF;
-		c = 0x80 | ( (n>>=8) & 0x7F ); 
-		b = 0x80 | ( (n>>=7) & 0x7F );
-		a = 0x80 | ( (n>>=7) & 0x7F );
-	}
-	else {
-		throw new Error('U29 range error, '+n+' > 0x1FFFFFFF');
-	}
-	if( writeMarker ){
-		this.writeU8( amf.AMF3_INTEGER );
-	}
-	this.writeU8( a );
-	if( b != null ){
-		this.writeU8( b );
-		if( c != null ){
-			this.writeU8( c );
-			if( d != null ){
-				this.writeU8( d );
+
+		if( n < 0 ){
+	        throw new Error('U29 range error, '+n+' < 0');
+	        //n += 0x20000000;
+		}
+		var a, b, c, d;
+		if( n < 0x00000080 ){
+			// 0AAAAAAA
+			a = n;
+		}
+		else if( n < 0x00004000 ){
+			//                      0x80-FF  0x00-7F
+			// 00AAAAAA ABBBBBBB -> 1AAAAAAA 0BBBBBBB
+			b = n & 0x7F;
+			a = 0x80 | ( n>>7 & 0x7F );
+		}
+		else if( n < 0x00200000 ){
+			//                               0x80-FF  0x80-FF  0x00-7F
+			// 000AAAAA AABBBBBB BCCCCCCC -> 1AAAAAAA 1BBBBBBB 0CCCCCCC
+			c = n & 0x7F;
+			b = 0x80 | ( (n>>=7) & 0x7F );
+			a = 0x80 | ( (n>>=7) & 0x7F );
+		}
+		else if( n < 0x20000000 ){
+			//                                        0x80-FF  0x80-FF  0x80-FF  0x00-FF
+			// 000AAAAA AABBBBBB BCCCCCCC DDDDDDDD -> 1AAAAAAA 1BBBBBBB 1CCCCCCC DDDDDDDD
+			d = n & 0xFF;
+			c = 0x80 | ( (n>>=8) & 0x7F );
+			b = 0x80 | ( (n>>=7) & 0x7F );
+			a = 0x80 | ( (n>>=7) & 0x7F );
+		}
+		else {
+			throw new Error('U29 range error, '+n+' > 0x1FFFFFFF');
+		}
+		if( writeMarker ){
+			this.writeU8( amf.AMF0_NUMBER );
+		}
+		this.writeU8( a );
+		if( b != null ){
+			this.writeU8( b );
+			if( c != null ){
+				this.writeU8( c );
+				if( d != null ){
+					this.writeU8( d );
+				}
 			}
 		}
-	}
-	return this.s;
+		return this.s;
+
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
